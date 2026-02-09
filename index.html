@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clics de Amor ❤️</title>
+    <style>
+        :root {
+            --heart-color: #ff0055;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            user-select: none;
+            background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #ffecd2, #fcb69f, #ff0055);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- UI DI GIOCO --- */
+        .game-container {
+            text-align: center;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            z-index: 10;
+            transition: opacity 0.5s;
+        }
+        
+        .game-container.faded { opacity: 0; pointer-events: none; }
+
+        h1 { 
+            color: #fff; 
+            font-size: 1.5rem; 
+            margin-bottom: 20px; 
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+        }
+
+        /* --- CUORE GRANDE CENTRALE --- */
+        .big-heart-wrapper {
+            cursor: pointer;
+            transition: transform 0.1s;
+            margin: 0 auto;
+            width: 220px;
+            height: 220px;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            filter: drop-shadow(0 10px 15px rgba(189, 29, 77, 0.3));
+        }
+        .big-heart-wrapper:active { transform: scale(0.95); }
+        .pulse { animation: heartbeat 2s infinite ease-in-out; }
+        
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        svg.heart-svg { width: 100%; height: 100%; overflow: visible; }
+        .heart-bg { fill: rgba(255,255,255,0.3); }
+        .heart-fill { fill: url(#liquid-gradient); }
+        .heart-border { fill: none; stroke: #fff; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* --- NUOVA SEZIONE: I DUE PEZZI DEL CUORE --- */
+        .couple-container {
+            display: flex; 
+            justify-content: center; /* Centrati */
+            align-items: center;
+            width: 100%; 
+            margin: 40px auto 0; 
+            position: relative;
+            height: 120px;
+        }
+
+        .half-wrapper {
+            width: 100px; /* Larghezza di ogni metà */
+            height: 140px;
+            position: relative;
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+
+        /* Il pezzo sinistro */
+        #left-wrapper {
+            transform: translateX(-30px) rotate(-15deg); /* Posizione iniziale: lontano e storto */
+            z-index: 2;
+        }
+
+        /* Il pezzo destro */
+        #right-wrapper {
+            transform: translateX(30px) rotate(15deg); /* Posizione iniziale: lontano e storto */
+            z-index: 2;
+        }
+
+        /* Immagine SVG interna */
+        .half-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Stile del bordo dei pezzi */
+        .puzzle-border {
+            fill: none;
+            stroke: #fff;
+            stroke-width: 3;
+        }
+
+        /* Il segno più al centro */
+        .plus-sign { 
+            position: absolute;
+            font-size: 2rem; 
+            color: #fff; 
+            font-weight: bold; 
+            z-index: 1; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* --- SCHERMATA VITTORIA & VIDEO --- */
+        .win-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(40, 0, 10, 0.95); 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 1.5s ease;
+            z-index: 100;
+        }
+        .win-overlay.visible { opacity: 1; pointer-events: auto; }
+
+        .win-text {
+            color: #fff; font-size: 3rem; font-weight: bold; margin-bottom: 20px;
+            text-shadow: 0 0 20px #ff0055;
+            animation: popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .video-frame {
+            position: relative; padding: 8px;
+            background: linear-gradient(45deg, #ff0055, #ffd700, #ff0055);
+            background-size: 200% 200%;
+            animation: borderGradient 3s ease infinite;
+            border-radius: 15px;
+            box-shadow: 0 0 50px rgba(255, 0, 85, 0.6);
+            width: 90%; max-width: 560px;
+        }
+        
+        video { width: 100%; border-radius: 8px; display: block; outline: none; background: #000; }
+
+        /* Cuori fluttuanti (Galassia) */
+        .floating-heart {
+            position: fixed; bottom: -50px;
+            color: rgba(255, 255, 255, 0.6);
+            pointer-events: none; z-index: 99;
+            animation: floatUp linear forwards;
+        }
+
+        @keyframes borderGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes floatUp { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 0.8; } 100% { transform: translateY(-120vh); opacity: 0; } }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="game-ui">
+        <h1>Clicca per unire i nostri cuori ❤️</h1>
+        
+        <div class="big-heart-wrapper pulse" id="clicker-zone">
+            <svg class="heart-svg" viewBox="0 0 512 512">
+                <defs>
+                    <linearGradient id="liquid-gradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                        <stop offset="0%" stop-color="#ff0055" id="fill-level"/> 
+                        <stop offset="0%" stop-color="transparent" id="transparent-level"/>
+                    </linearGradient>
+                </defs>
+                <path class="heart-bg" d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z"/>
+                <path class="heart-fill" d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z"/>
+                <path class="heart-border" d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z"/>
+            </svg>
+        </div>
+
+        <div class="couple-container">
+            
+            <div class="half-wrapper" id="left-wrapper">
+                <svg class="half-svg" viewBox="0 0 100 200">
+                    <defs>
+                        <clipPath id="clip-left">
+                            <path d="M 100 200 L 100 50 A 50 50 0 0 0 0 50 C 0 110 100 200 100 200 Z" />
+                        </clipPath>
+                    </defs>
+                    <image href="carmine.png" width="150" height="200" x="-25" y="0" clip-path="url(#clip-left)" preserveAspectRatio="xMidYMid slice"/>
+                    <path class="puzzle-border" d="M 100 200 L 100 50 A 50 50 0 0 0 0 50 C 0 110 100 200 100 200 Z" />
+                </svg>
+            </div>
+
+            <div class="plus-sign" id="plus-sign">+</div>
+
+            <div class="half-wrapper" id="right-wrapper">
+                <svg class="half-svg" viewBox="0 0 100 200">
+                    <defs>
+                        <clipPath id="clip-right">
+                            <path d="M 0 200 L 0 50 A 50 50 0 0 1 100 50 C 100 110 0 200 0 200 Z" />
+                        </clipPath>
+                    </defs>
+                    <image href="Giusy.jpg" width="150" height="200" x="-25" y="0" clip-path="url(#clip-right)" preserveAspectRatio="xMidYMid slice"/>
+                    <path class="puzzle-border" d="M 0 200 L 0 50 A 50 50 0 0 1 100 50 C 100 110 0 200 0 200 Z" />
+                </svg>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="win-overlay" id="win-screen">
+        <div class="win-text">I Love You 3000!</div>
+        <div class="video-frame">
+            <video id="final-video" controls playsinline>
+                <source src="videoFinale.mp4" type="video/mp4">
+            </video>
+        </div>
+    </div>
+
+    <script>
+        const TOTAL_CLICKS = 20; 
+        let clicks = 0;
+        let isWon = false;
+
+        const clickerZone = document.getElementById('clicker-zone');
+        const fillLevel = document.getElementById('fill-level');
+        const transparentLevel = document.getElementById('transparent-level');
+        const leftWrapper = document.getElementById('left-wrapper');
+        const rightWrapper = document.getElementById('right-wrapper');
+        const plusSign = document.getElementById('plus-sign');
+        const winScreen = document.getElementById('win-screen');
+        const gameUI = document.getElementById('game-ui');
+        const myVideo = document.getElementById('final-video');
+
+        clickerZone.addEventListener('mousedown', handleClick);
+        clickerZone.addEventListener('touchstart', (e) => { e.preventDefault(); handleClick(); });
+
+        function handleClick() {
+            if (isWon) return;
+
+            clicks++;
+            const percentage = Math.min((clicks / TOTAL_CLICKS) * 100, 100);
+
+            // 1. Riempimento Cuore Grande
+            fillLevel.setAttribute('offset', `${percentage}%`);
+            transparentLevel.setAttribute('offset', `${percentage}%`);
+            
+            // 2. Animazione Pezzi del Puzzle
+            // Calcoliamo lo spostamento per arrivare esattamente a 0 (unione perfetta)
+            // Partiamo da gap e rotazione, finiamo a 0 gap e 0 rotazione.
+            
+            // Distanza iniziale simulata: 30px
+            // Rotazione iniziale: 15deg
+            const currentGap = 30 - ((percentage / 100) * 30); 
+            const currentRot = 15 - ((percentage / 100) * 15);
+
+            // Applichiamo
+            leftWrapper.style.transform = `translateX(${-currentGap}px) rotate(${-currentRot}deg)`;
+            rightWrapper.style.transform = `translateX(${currentGap}px) rotate(${currentRot}deg)`;
+            
+            // Opacità del "+" che sparisce man mano che si uniscono
+            plusSign.style.opacity = 1 - (percentage / 100);
+
+            // Rimbalzo
+            clickerZone.style.transform = "scale(0.9)";
+            setTimeout(() => { clickerZone.style.transform = "scale(1)"; }, 100);
+
+            if (clicks >= TOTAL_CLICKS) {
+                victory();
+            }
+        }
+
+        function victory() {
+            isWon = true;
+            // Unione finale forzata perfetta
+            leftWrapper.style.transform = `translateX(0px) rotate(0deg)`;
+            rightWrapper.style.transform = `translateX(0px) rotate(0deg)`;
+
+            setTimeout(() => {
+                gameUI.classList.add('faded');
+                winScreen.classList.add('visible');
+                startHeartGalaxy();
+                myVideo.play().catch(e => console.log("Autoplay bloccato"));
+            }, 500);
+        }
+
+        function startHeartGalaxy() {
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.classList.add('floating-heart');
+                heart.innerText = ['❤️', '💖', '🤍', '💗', '💞'][Math.floor(Math.random() * 5)];
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = (Math.random() * 25 + 10) + 'px';
+                heart.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                document.body.appendChild(heart);
+                setTimeout(() => heart.remove(), 8000);
+            }, 150);
+        }
+    </script>
+</body>
+</html>
